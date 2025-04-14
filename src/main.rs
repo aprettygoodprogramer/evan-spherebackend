@@ -12,11 +12,8 @@ use sqlx::{PgPool, postgres::PgPoolOptions};
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
 
-#[derive(Clone)]
-struct AppState {
-    pub db_pool: PgPool,
-}
-
+mod models;
+use models::AppState;
 #[tokio::main]
 async fn main() {
     dotenv::dotenv().ok();
