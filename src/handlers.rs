@@ -1,18 +1,15 @@
 use crate::models::{AppState, Post};
-use axum::debug_handler;
 use axum::{
     Json,
     extract::{Path, State},
 };
-
-use std::sync::Arc;
-#[axum::debug_handler]
+use sqlx::query_as;
 
 pub async fn get_post_handler(
     State(state): State<AppState>,
     Path(id): Path<i32>,
 ) -> Result<Json<Post>, (axum::http::StatusCode, String)> {
-    let post = sqlx::query_as::<_, Post>(
+    let post = query_as::<_, Post>(
         r#"
         SELECT id, title, content, slug, created_at
         FROM posts
@@ -26,10 +23,11 @@ pub async fn get_post_handler(
 
     Ok(Json(post))
 }
+
 pub async fn get_all_posts_handler(
     State(state): State<AppState>,
 ) -> Result<Json<Vec<Post>>, (axum::http::StatusCode, String)> {
-    let posts = sqlx::query_as::<sqlx::Postgres, Post>(
+    let posts = query_as::<_, Post>(
         r#"
         SELECT id, title, content, slug, created_at
         FROM posts
@@ -42,11 +40,12 @@ pub async fn get_all_posts_handler(
 
     Ok(Json(posts))
 }
+
 pub async fn get_post_by_slug_handler(
     State(state): State<AppState>,
     Path(slug): Path<String>,
 ) -> Result<Json<Post>, (axum::http::StatusCode, String)> {
-    let post = sqlx::query_as::<_, Post>(
+    let post = query_as::<_, Post>(
         r#"
         SELECT id, title, content, slug, created_at
         FROM posts
