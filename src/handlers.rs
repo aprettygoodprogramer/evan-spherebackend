@@ -12,15 +12,14 @@ pub async fn get_post_handler(
     State(state): State<AppState>,
     Path(id): Path<i32>,
 ) -> Result<Json<Post>, (axum::http::StatusCode, String)> {
-    let post = sqlx::query_as!(
-        Post,
+    let post = sqlx::query_as::<_, Post>(
         r#"
         SELECT id, title, content, slug, created_at
         FROM posts
         WHERE id = $1
         "#,
-        id
     )
+    .bind(id)
     .fetch_one(&state.db_pool)
     .await
     .map_err(|e| (axum::http::StatusCode::NOT_FOUND, e.to_string()))?;
@@ -30,13 +29,12 @@ pub async fn get_post_handler(
 pub async fn get_all_posts_handler(
     State(state): State<AppState>,
 ) -> Result<Json<Vec<Post>>, (axum::http::StatusCode, String)> {
-    let posts = sqlx::query_as!(
-        Post,
+    let posts = sqlx::query_as::<sqlx::Postgres, Post>(
         r#"
         SELECT id, title, content, slug, created_at
         FROM posts
         ORDER BY created_at DESC
-        "#
+        "#,
     )
     .fetch_all(&state.db_pool)
     .await
@@ -48,15 +46,14 @@ pub async fn get_post_by_slug_handler(
     State(state): State<AppState>,
     Path(slug): Path<String>,
 ) -> Result<Json<Post>, (axum::http::StatusCode, String)> {
-    let post = sqlx::query_as!(
-        Post,
+    let post = sqlx::query_as::<_, Post>(
         r#"
         SELECT id, title, content, slug, created_at
         FROM posts
         WHERE slug = $1
         "#,
-        slug
     )
+    .bind(slug)
     .fetch_one(&state.db_pool)
     .await
     .map_err(|e| (axum::http::StatusCode::NOT_FOUND, e.to_string()))?;
